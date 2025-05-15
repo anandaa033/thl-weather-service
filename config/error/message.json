@@ -1,0 +1,39 @@
+{
+    "success": {
+      "code": 0,
+      "message": {
+        "th": "success",
+        "en": "success"
+      }
+    },
+    "errorGroup1": {
+      "error_1": {
+        "code": 1,
+        "message": {
+          "th": "error_1",
+          "en": "error_1"
+        }
+      },
+      "error_2": {
+        "code": 2,
+        "message": {
+          "th": "error_2",
+          "en": "error_2"
+        }
+      }
+    },
+    "error_3": {
+      "code": 3,
+      "message": {
+        "th": "error_3",
+        "en": "error_3"
+      }
+    },
+    "ping_error": {
+      "code": 4,
+      "message": {
+        "th": "ping_error",
+        "en": "ping_error"
+      }
+    }
+  }

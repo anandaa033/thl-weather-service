@@ -1,0 +1,144 @@
+basePath: /api
+definitions:
+  ServiceLogin.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  ServiceLogin.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
+  ServiceRegister.RegisterRequest:
+    properties:
+      confirm_password:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - confirm_password
+    - email
+    - full_name
+    - password
+    type: object
+  models.User:
+    properties:
+      bookmark:
+        type: integer
+      created_at:
+        format: date-time
+        type: string
+      deleted_at:
+        format: date-time
+        type: string
+      email:
+        type: string
+      follow:
+        type: integer
+      full_name:
+        type: string
+      id:
+        type: integer
+      likes:
+        type: integer
+      password:
+        type: string
+      profile:
+        type: string
+      updated_at:
+        format: date-time
+        type: string
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
+      massage:
+        type: string
+      result: {}
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a sample server for THL Login Service.
+  title: THL Login Service API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login user and get JWT token
+      parameters:
+      - description: Login Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ServiceLogin.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/ServiceLogin.LoginResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: User Login
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: Register Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ServiceRegister.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Register User
+      tags:
+      - Auth
+produces:
+- application/json
+schemes:
+- http
+- https
+swagger: "2.0"
