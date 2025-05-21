@@ -18,8 +18,8 @@ app:
 #! อันนี้ฐานข้อมูล
 database:
   postgres:
-    dbname: "service_login"
-    host: "ep-ancient-mouse-a1ew8pnp-pooler.ap-southeast-1.aws.neon.tech"
+    dbname: "mydb"
+    host: "34.142.241.45"
     port: 5432
-    username: "service_login_owner"
-    password: "npg_CcjJINs4wr0W"
+    username: "admin"
+    password: "admin123"

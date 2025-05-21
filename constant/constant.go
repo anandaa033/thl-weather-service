@@ -6,6 +6,6 @@ var Roles = map[uint]string{
 }
 
 const (
-	RoleAdmin = "1" // Role สำหรับ Admin
-	RoleUser  = "2" // Role สำหรับ User
+	RoleAdmin = "1"
+	RoleUser  = "2"
 )

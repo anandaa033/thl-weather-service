@@ -5,35 +5,47 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"strings"
 	"time"
 
-	"github.com/anandaa033/thl-weather-service/services"
+	"thlWeatherService/services"
 )
 
 func WeatherHandler(w http.ResponseWriter, r *http.Request) {
 	city := r.URL.Query().Get("city")
 	if city == "" {
-		http.Error(w, "Missing 'city' parameter", http.StatusBadRequest)
+		writeError(w, http.StatusBadRequest, "Missing 'city' parameter")
 		return
 	}
 
 	forecast, err := services.FetchWeatherData(city)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error fetching weather data: %v", err), http.StatusInternalServerError)
+		if strings.Contains(err.Error(), "city not found") {
+			writeError(w, http.StatusNotFound, "City not found")
+		} else {
+			writeError(w, http.StatusInternalServerError, fmt.Sprintf("Error fetching weather data: %v", err))
+		}
 		return
 	}
 
-	avgTemp := services.CalculateAverageTemp(forecast)
-	today := time.Now().Format("2006-01-02")
+	loc, err := time.LoadLocation("Asia/Bangkok")
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+	now := time.Now().In(loc)
+	today := now.Format("2006-01-02")
+
 	var todayForecast []map[string]interface{}
 	var sumHumidity, sumWind, sumPrecip float64
 	var count int
+	var TempNow float64
 
 	var (
 		totalDayTemp, totalNightTemp float64
 		dayCount, nightCount         int
 		maxDayTemp, maxNightTemp     float64
-		minDayTemp, minNightTemp     float64
+		minDayTemp, minNightTemp     = math.MaxFloat64, math.MaxFloat64
 	)
 
 	const maxExpectedRainMM = 30.0
@@ -57,7 +69,7 @@ func WeatherHandler(w http.ResponseWriter, r *http.Request) {
 				if item.Main.Temp > maxDayTemp {
 					maxDayTemp = item.Main.Temp
 				}
-				if item.Main.Temp < minDayTemp || minDayTemp == 0 {
+				if item.Main.Temp < minDayTemp {
 					minDayTemp = item.Main.Temp
 				}
 			} else {
@@ -66,7 +78,7 @@ func WeatherHandler(w http.ResponseWriter, r *http.Request) {
 				if item.Main.Temp > maxNightTemp {
 					maxNightTemp = item.Main.Temp
 				}
-				if item.Main.Temp < minNightTemp || minNightTemp == 0 {
+				if item.Main.Temp < minNightTemp {
 					minNightTemp = item.Main.Temp
 				}
 			}
@@ -100,15 +112,56 @@ func WeatherHandler(w http.ResponseWriter, r *http.Request) {
 			precipPct = 100
 		}
 		precipPct = math.Round(precipPct*10) / 10
-		todayCondition = todayForecast[0]["condition"].(string)
+
+		var closestForecast map[string]interface{}
+		var latestPastForecastTime time.Time
+		var earliestFutureForecast map[string]interface{}
+		var earliestFutureTime time.Time
+
+		for _, forecast := range todayForecast {
+			forecastTimeStr := forecast["time"].(string)
+			forecastTime, err := time.ParseInLocation("2006-01-02 15:04:05", forecastTimeStr, loc)
+			if err != nil {
+				continue
+			}
+
+			if forecastTime.Before(now) || forecastTime.Equal(now) {
+				if forecastTime.After(latestPastForecastTime) {
+					latestPastForecastTime = forecastTime
+					closestForecast = forecast
+				}
+			} else {
+				if earliestFutureTime.IsZero() || forecastTime.Before(earliestFutureTime) {
+					earliestFutureTime = forecastTime
+					earliestFutureForecast = forecast
+				}
+			}
+		}
+
+		if closestForecast == nil && earliestFutureForecast != nil {
+			closestForecast = earliestFutureForecast
+		}
+
+		if closestForecast != nil {
+			todayCondition = closestForecast["condition"].(string)
+			TempNow = closestForecast["temp"].(float64)
+		}
+	}
+
+	if minDayTemp == math.MaxFloat64 {
+		minDayTemp = 0
+	}
+	if minNightTemp == math.MaxFloat64 {
+		minNightTemp = 0
 	}
 
 	dailyForecasts := services.SummarizeDailyForecasts(forecast)
 
 	response := map[string]interface{}{
+		"message":         "success",
 		"city":            forecast.City.Name,
 		"country":         forecast.City.Country,
-		"avg_temp":        avgTemp,
+		"temp_now":        TempNow,
 		"humidity_pct":    humidityPct,
 		"wind_speed_kmh":  windSpeedKmh,
 		"precip_pct":      precipPct,
@@ -133,4 +186,12 @@ func WeatherHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func writeError(w http.ResponseWriter, status int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": message,
+	})
 }
