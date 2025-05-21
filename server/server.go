@@ -5,7 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	handlers "thlWeatherService/handlers/handler_weather"
+	handlersLocation "thlWeatherService/handlers/handler_location"
+	handlersWheather "thlWeatherService/handlers/handler_weather"
 	"thlWeatherService/pkg/config"
 	"thlWeatherService/pkg/database"
 )
@@ -19,9 +20,9 @@ func Run() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
-	http.HandleFunc("/api/weather", handlers.WeatherHandler)
-	http.HandleFunc("/api/weather/multiple", handlers.MultiCityWeatherHandler)
-	http.HandleFunc("/api/user/cities", handlers.UserCitiesHandler)
+	http.HandleFunc("/api/weather", handlersWheather.WeatherHandler)
+	http.HandleFunc("/api/weather/multiple", handlersLocation.MultiCityWeatherHandler)
+	http.HandleFunc("/api/user/cities", handlersLocation.UserCitiesHandler)
 
 	port := config.Get().App.Config.Port
 	log.Printf("✅ Server is running at http://localhost:%d", port)
