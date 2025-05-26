@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	handlersLocation "thlWeatherService/handlers/handler_location"
-	handlersWheather "thlWeatherService/handlers/handler_weather"
+	handlersLocation "thlWeatherService/server/handlers/handler_location"
+	handlersWheather "thlWeatherService/server/handlers/handler_weather"
 	"thlWeatherService/pkg/config"
 	"thlWeatherService/pkg/database"
 )

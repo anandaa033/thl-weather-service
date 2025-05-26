@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"thlWeatherService/services"
+	"thlWeatherService/pkg/services"
+
 )
 
 func UserCitiesHandler(w http.ResponseWriter, r *http.Request) {

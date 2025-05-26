@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"thlWeatherService/pkg/database"
-	"thlWeatherService/pkg/models"
+	"thlWeatherService/pkg/repository/thlWeatherServiceRepository/models"
 
 	"gorm.io/gorm"
 )

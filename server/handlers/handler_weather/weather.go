@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"thlWeatherService/services"
+	"thlWeatherService/pkg/services"
 )
 
 func WeatherHandler(w http.ResponseWriter, r *http.Request) {

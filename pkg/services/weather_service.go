@@ -8,7 +8,7 @@ import (
 	"sort"
 	"time"
 
-	"thlWeatherService/models"
+	"thlWeatherService/pkg/repository/thlWeatherServiceRepository/models"
 )
 
 const apiKey = "e5ae287b7d3c0a860ae06db0e2ff0f1d"
